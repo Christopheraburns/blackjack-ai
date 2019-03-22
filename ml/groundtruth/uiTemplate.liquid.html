@@ -1,16 +1,16 @@
 <script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
 <crowd-form>
   <crowd-instance-segmentation
-    name="crowd-semantic-segmentation"
+    name="crowd-instance-segmentation"
     src="{{ task.input.taskObject | grant_read_access }}"
     header="Use the Polygon tool to draw 1 Card Shape label per card around each card, and AVOID overlapping the Card Shape labels."
     labels="{{ task.input.labels | to_json | escape }}"
   >
-    <full-instructions header="Segmentation instructions">
+    <full-instructions header="Instance Segmentation instructions">
       <ol><li><strong>Read</strong> the task carefully and inspect the image.</li><li><strong>Read</strong> the options and review the examples provided to understand more about the labels.</li><li><strong>Label</strong> all card shapes in the image.</li><li>Observe this photo for poker playing card references:</li></ol><p><br></p><p><img src="https://signed.laithalsaadoon.com/deck-of-cards.gif" style="max-width:100%"></p>
     </full-instructions>
     <short-instructions>
       <h2><span style="color: rgb(0, 138, 0);">Good example</span></h2><p>Polygon shape clearly separates each card.</p><p><img src="https://signed.laithalsaadoon.com/Good.gif" style="max-width:100%"></p><p><br></p><h2><span style="color: rgb(230, 0, 0);">Bad example</span></h2><p>Polygon shape is overlaps cards and does not shape the card.</p><p><img src="https://signed.laithalsaadoon.com/bad.gif" style="max-width:100%"></p>
     </short-instructions>
-  </crowd-semantic-segmentation>
+  </crowd-instance-segmentation>
 </crowd-form>
