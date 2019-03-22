@@ -12,8 +12,8 @@ Private code repo for the re:Vegas blackjack computer vision workshop
      - running count, true count of cards
      - heuristic blackjack "basic strategy" processing
      - publish inference results, totals, and strategy to serve frontend
-   - /frontend
-     - HTML, JS, CSS code for a frontend that displays results from the ML and backend
-     - likely to use Amplify and AppSync
-     - WSS to AppSync to display inference + betting strategy
-     - "replay" camera footage with conventional CV outputs (mask, bounding box, confidence) over the cards
+ - /frontend
+   - HTML, JS, CSS code for a frontend that displays results from the ML and backend
+   - likely to use Amplify and AppSync
+   - WSS to AppSync to display inference + betting strategy
+   - "replay" camera footage with conventional CV outputs (mask, bounding box, confidence) over the cards
