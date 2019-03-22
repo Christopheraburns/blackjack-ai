@@ -1,0 +1,47 @@
+{
+    "LabelingJobName": "remars2019-revegas-cardlabeling-priv-201903221648",
+    "LabelAttributeName": "card-object-detection-ref",
+    "InputConfig": {
+        "DataSource": {
+            "S3DataSource": {
+                "ManifestS3Uri": "s3://remars2019-revegas-groundtruth-assets/manifest/dataset-20190322T151870.manifest"
+            }
+        },
+        "DataAttributes": {
+            "ContentClassifiers": [
+                "FreeOfAdultContent",
+                "FreeOfPersonallyIdentifiableInformation"
+            ]
+        }
+    },
+    "OutputConfig": {
+        "S3OutputPath": "s3://remars2019-revegas-groundtruth-assets/labelingjob-outputs/"
+    },
+    "RoleArn": "arn:aws:iam::150520346847:role/service-role/AmazonSageMaker-ExecutionRole-20190322T135748",
+    "LabelCategoryConfigS3Uri": "s3://remars2019-revegas-groundtruth-assets/labelingjob-template-artifacts/labelsCategoryConfig.json",
+    "StoppingConditions": {
+        "MaxPercentageOfInputDatasetLabeled": 100
+    },
+    "HumanTaskConfig": {
+        "WorkteamArn": "arn:aws:sagemaker:us-east-1:150520346847:workteam/private-crowd/revegas-labeling-private",
+        "UiConfig": {
+            "UiTemplateS3Uri": "s3://remars2019-revegas-groundtruth-assets/labelingjob-template-artifacts/uiTemplate.liquid.html"
+        },
+        "PreHumanTaskLambdaArn": "arn:aws:lambda:us-east-1:150520346847:function:remars2019RevegasInstanceSegPreLabelingFunction",
+        "TaskKeywords": [
+            "Images",
+            "Instance segmentation",
+            "blackjack",
+            "playing cards"
+        ],
+        "TaskTitle": "Instance segmentation: label distinct playing cards and their rank",
+        "TaskDescription": "Draw pixel level labels around playing cards",
+        "NumberOfHumanWorkersPerDataObject": 1,
+        "TaskTimeLimitInSeconds": 1200,
+        "TaskAvailabilityLifetimeInSeconds": 21600,
+        "MaxConcurrentTaskCount": 1000,
+        "AnnotationConsolidationConfig": {
+            "AnnotationConsolidationLambdaArn": "arn:aws:lambda:us-east-1:150520346847:function:remars2019RevegasInstanceSegPostLabelingFunction"
+        }
+    }
+}
