@@ -2,43 +2,7 @@
     "document-version": "2018-11-28",
     "labels": [
         {
-            "label": "Rank/Face - Ace"
-        },
-        {
-            "label": "Rank/Face - Two"
-        },
-        {
-            "label": "Rank/Face - Three"
-        },
-        {
-            "label": "Rank/Face - Four"
-        },
-        {
-            "label": "Rank/Face - Five"
-        },
-        {
-            "label": "Rank/Face - Six"
-        },
-        {
-            "label": "Rank/Face - Seven"
-        },
-        {
-            "label": "Rank/Face - Eight"
-        },
-        {
-            "label": "Rank/Face - Nine"
-        },
-        {
-            "label": "Rank/Face - Ten"
-        },
-        {
-            "label": "Rank/Face - Jack"
-        },
-        {
-            "label": "Rank/Face - Queen"
-        },
-        {
-            "label": "Rank/Face - King"
+            "label": "Playing Card"
         }
     ]
 }
