@@ -1,0 +1,36 @@
+<script src="https://assets.crowd.aws/crowd-html-elements.js"></script>
+
+<crowd-form>
+  <crowd-bounding-box
+    name="annotatedResult"
+    src="{{ task.input.taskObject | grant_read_access }}"
+    header="Draw a box around each playing card in the image. Accurately select the right label from the right menu to match the playing card rank (ace, two, three, and so on...)"
+    labels="{{ task.input.labels | to_json | escape }}"
+  >
+    <full-instructions header="Bounding Box Instructions" >
+      <p>Use the bounding box tool to draw boxes around the blackjack playing cards:</p>
+      <ol>
+        <li>Draw a rectangle using your mouse over each instance of the playing cards.</li>
+        <li>Make sure the box does not cut into the target, leave a 2 - 3 pixel margin</li>
+        <li>
+          When targets are overlapping, draw a box around each object,
+          include all contiguous parts of the target in the box.
+          Do not include parts that are completely overlapped by another object.
+        </li>
+        <li>
+          Do not include parts of the target that cannot be seen,
+          even though you think you can interpolate the whole shape of the target.
+        </li>
+        <li>Avoid shadows, they're not considered as a part of the target.</li>
+        <li>If the target goes off the screen, label up to the edge of the image.</li>
+        <li>Do not label playing cards that are "face down". In other words, do not label the back of playing cards.</li>
+      </ol>
+    </full-instructions>
+
+    <short-instructions>
+      <h2><span style="color: rgb(0, 138, 0);">Good example</span></h2><p>Polygon shape clearly separates each card.</p><p><img src="https://d1b8vx0u1m0yq6.cloudfront.net/public/assets/images/good.jpg" style="max-width:100%"></p><p><br></p>
+      <h2><span style="color: rgb(230, 0, 0);">Bad example</span></h2><p>Polygon shape is overlaps cards and does not shape the card.</p><p><img src="https://d1b8vx0u1m0yq6.cloudfront.net/public/assets/images/bad.jpg" style="max-width:100%"></p><p><br></p>
+      <h2><span style="color: rgb(230, 0, 0);">Do not label face down cards</span></h2><p>Face down cards look like this:</p><p><img src="https://d1b8vx0u1m0yq6.cloudfront.net/public/assets/images/face_down.jpg" style="max-width:100%"></p>
+    </short-instructions>
+  </crowd-bounding-box>
+</crowd-form>

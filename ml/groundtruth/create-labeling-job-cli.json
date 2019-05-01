@@ -1,10 +1,10 @@
 {
-    "LabelingJobName": "remars2019-revegas-cardlabeling-pub-20190401-2",
-    "LabelAttributeName": "card-object-detection-ref",
+    "LabelingJobName": "remars2019-revegas-cardlabeling-pub-20190403-2",
+    "LabelAttributeName": "card-object-detection",
     "InputConfig": {
         "DataSource": {
             "S3DataSource": {
-                "ManifestS3Uri": "s3://remars2019-revegas-groundtruth-assets/manifest/labeling-job-manifest.manifest"
+                "ManifestS3Uri": "s3://remars2019-revegas-playingcards/dataset-20190403T164125.manifest"
             }
         },
         "DataAttributes": {
@@ -23,32 +23,26 @@
         "MaxPercentageOfInputDatasetLabeled": 100
     },
     "HumanTaskConfig": {
-        "WorkteamArn": "arn:aws:sagemaker:us-east-1:394669845002:workteam/public-crowd/default",
+        "WorkteamArn": "arn:aws:sagemaker:us-east-1:150520346847:workteam/private-crowd/revegas-labeling-private",
         "UiConfig": {
-            "UiTemplateS3Uri": "s3://remars2019-revegas-groundtruth-assets/labelingjob-template-artifacts/uiTemplate.liquid.html"
+            "UiTemplateS3Uri": "s3://remars2019-revegas-groundtruth-assets/labelingjob-template-artifacts/bboxTemplate.liquid.html"
         },
-        "PreHumanTaskLambdaArn": "arn:aws:lambda:us-east-1:150520346847:function:remars2019RevegasInstanceSegPreLabelingFunction",
+        "PreHumanTaskLambdaArn": "arn:aws:lambda:us-east-1:432418664414:function:PRE-BoundingBox",
         "TaskKeywords": [
             "Images",
-            "Instance segmentation",
+            "bounding box",
+            "object detection",
             "blackjack",
             "playing cards"
         ],
-        "TaskTitle": "Instance segmentation: label distinct playing cards and their rank",
-        "TaskDescription": "Draw pixel level labels around playing cards",
-        "NumberOfHumanWorkersPerDataObject": 1,
+        "TaskTitle": "Object Detection: Detect playing cards and their rank",
+        "TaskDescription": "Draw bounding boxes aroung blackjack playing cards",
+        "NumberOfHumanWorkersPerDataObject": 5,
         "TaskTimeLimitInSeconds": 1200,
         "TaskAvailabilityLifetimeInSeconds": 21600,
         "MaxConcurrentTaskCount": 1000,
         "AnnotationConsolidationConfig": {
-            "AnnotationConsolidationLambdaArn": "arn:aws:lambda:us-east-1:150520346847:function:remars2019RevegasInstanceSegPostLabelingFunction"
-        },
-        "PublicWorkforceTaskPrice": {
-            "AmountInUsd": {
-                "Dollars": 0,
-                "Cents": 84,
-                "TenthFractionsOfACent": 0
-            }
+            "AnnotationConsolidationLambdaArn": "arn:aws:lambda:us-east-1:432418664414:function:ACS-BoundingBox"
         }
     }
 }
