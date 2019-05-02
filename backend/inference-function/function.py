@@ -22,8 +22,6 @@ iot_data = boto3.client('iot-data')
 
 bucket_name = 'remars2019-revegas-imageslanding'
 
-
-
 class_map = {"AC": 0, "2C": 1, "3C": 2, "4C": 3, "5C": 4, "6C": 5, "7C": 6, "8C": 7, "9C": 8, "10C": 9, "JC": 10, "QC": 11, "KC": 12, "AD": 13, "2D": 14, "3D": 15, "4D": 16, "5D": 17, "6D": 18, "7D": 19, "8D": 20, "9D": 21, "10D": 22, "JD":23, "QD": 24, "KD": 25, "AH": 26, "2H": 27, "3H": 28, "4H": 29, "5H": 30, "6H": 31, "7H": 32, "8H": 33, "9H": 34, "10H": 35, "JH": 36, "QH": 37, "KH": 38, "AS": 39, "2S": 40, "3S": 41, "4S": 42, "5S": 43, "6S": 44, "7S": 45, "8S": 46, "9S": 47, "10S": 48, "JS": 49, "QS": 50, "KS": 51}
 
 object_categories = list(class_map.keys())
@@ -33,7 +31,8 @@ def read_s3_contents_with_download(bucket_name, key):
     s3.Object(bucket_name, key).download_fileobj(bytes_io)
     return bytes_io
 
-def visualize_detection(img_file, dets, dest_key, source_key, classes=[], thresh=0.5, bucket_name='remars2019-revegas-imageslanding'):
+
+def visualize_detection(img, dets, dest_key, player_dealer, height, width, classes=[], thresh=0.5, bucket_name='remars2019-revegas-imageslanding'):
         '''
         visualize detections in one image
         Parameters:
@@ -51,10 +50,10 @@ def visualize_detection(img_file, dets, dest_key, source_key, classes=[], thresh
         f = io.BytesIO()
         plt.clf()
 
-        img=mpimg.imread(img_file, 'jpg')
+        # img=mpimg.imread(img_file, 'jpg')
         plt.imshow(img)
-        height = img.shape[0]
-        width = img.shape[1]
+        # height = img.shape[0]
+        # width = img.shape[1]
         colors = dict()
         for det in dets:
             (klass, score, x0, y0, x1, y1) = det
@@ -89,12 +88,12 @@ def visualize_detection(img_file, dets, dest_key, source_key, classes=[], thresh
 
         s3_client.upload_fileobj(f, bucket_name, dest_key, {'ContentType': 'image/png'})
         # send IoT Message
-        # interpolate topic string from player id in source_key
         iot_data.publish(
-            topic='newimagespl1',
+            topic='newimages' + player_dealer,
             payload=json.dumps({
                 's3Key': dest_key
             }))
+
 
 def get_key(val): 
     for key, value in class_map.items(): 
@@ -103,19 +102,19 @@ def get_key(val):
   
     return "key doesn't exist"
 
-def format_predictions(dets, thresh=0.5):
+
+def format_predictions(dets, height, width, player_dealer, thresh=0.5):
     records = []
     for det in dets:
         (klass, score, x0, y0, x1, y1) = det
         if score < thresh:
             continue
         data = {
+            'playerDealer': player_dealer,
             'cls': get_key(klass),
             'score': score,
-            'xmin': x0,
-            'ymin': y0,
-            'xmax': x1,
-            'ymax': y1
+            'xmin-ymin': [int(x0 * width),int(y0 * height)], # top left
+            'xmax-ymax': [int(x1 * width),int(y1 * height)] # bottom right
         }
         record = {
             'Data': json.dumps(data),
@@ -129,11 +128,13 @@ def handler(event, context):
     global bucket_name
     endpoint = str(os.environ['smendpoint'])
 
-
     source_key = event['Records'][0]['s3']['object']['key']
     print(source_key)
 
     img = read_s3_contents_with_download(bucket_name, source_key)
+    img_file=mpimg.imread(img, 'jpg')
+    height = img_file.shape[0]
+    width = img_file.shape[1]
 
     real_time_pred = sagemaker.predictor.RealTimePredictor(
         endpoint=endpoint,
@@ -149,18 +150,21 @@ def handler(event, context):
     # dets = json.loads(real_time_pred.predict(new_bytes.getvalue()))
     dets = json.loads(real_time_pred.predict(img.getvalue()))
 
-    records = format_predictions(dets['prediction'], thresh=0.3)
+    dest_key_base = os.path.basename(source_key)
+    dest_key_no_ext = os.path.splitext(dest_key_base)[0]
+    # get playerid from sourcekey in prod
+    player_dealer = dest_key_no_ext[-3:]
+    dest_key = 'dest/' + dest_key_no_ext + '.png'
+
+    records = format_predictions(dets['prediction'], height=height, width=width, thresh=0.3, player_dealer=player_dealer)
     print(json.dumps(records))
     kinesis.put_records(
         Records=records,
         StreamName='remars-revegas-dedup-stream'
     )
 
-    dest_key_base = os.path.basename(source_key)
-    dest_key_no_ext = os.path.splitext(dest_key_base)[0]
-    # get playerid from sourcekey in prod
-    dest_key = 'dest/' + dest_key_no_ext + 'player1-pred.png'
+
 
     # TODO: Store pred viz in S3
-    visualize_detection(img_file=img, dets=dets['prediction'], dest_key=dest_key, classes=object_categories, thresh=0.3, source_key=source_key)
+    visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, height=height, width=width, classes=object_categories, thresh=0.3)
     return
