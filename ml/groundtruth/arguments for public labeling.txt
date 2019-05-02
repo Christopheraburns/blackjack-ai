@@ -1,0 +1,6 @@
+        "PublicWorkforceTaskPrice": {
+            "AmountInUsd": {
+                "Dollars": 0,
+                "Cents": 84,
+                "TenthFractionsOfACent": 0
+            }

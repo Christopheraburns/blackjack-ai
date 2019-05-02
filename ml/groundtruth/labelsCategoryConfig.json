@@ -2,43 +2,43 @@
     "document-version": "2018-11-28",
     "labels": [
         {
-            "label": "Rank/Face - Ace"
+            "label": "ace"
         },
         {
-            "label": "Rank/Face - Two"
+            "label": "two"
         },
         {
-            "label": "Rank/Face - Three"
+            "label": "three"
         },
         {
-            "label": "Rank/Face - Four"
+            "label": "four"
         },
         {
-            "label": "Rank/Face - Five"
+            "label": "five"
         },
         {
-            "label": "Rank/Face - Six"
+            "label": "six"
         },
         {
-            "label": "Rank/Face - Seven"
+            "label": "seven"
         },
         {
-            "label": "Rank/Face - Eight"
+            "label": "eight"
         },
         {
-            "label": "Rank/Face - Nine"
+            "label": "nine"
         },
         {
-            "label": "Rank/Face - Ten"
+            "label": "ten"
         },
         {
-            "label": "Rank/Face - Jack"
+            "label": "jack"
         },
         {
-            "label": "Rank/Face - Queen"
+            "label": "queen"
         },
         {
-            "label": "Rank/Face - King"
+            "label": "king"
         }
     ]
 }
