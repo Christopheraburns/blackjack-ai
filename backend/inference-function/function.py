@@ -7,7 +7,6 @@ import random
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import os
-import tempfile
 # from PIL import Image
 
 
@@ -32,7 +31,7 @@ def read_s3_contents_with_download(bucket_name, key):
     return bytes_io
 
 
-def visualize_detection(img, dets, dest_key, player_dealer, height, width, classes=[], thresh=0.5, bucket_name='remars2019-revegas-imageslanding'):
+def visualize_detection(img, dets, dest_key, player_dealer, height, width, classes=[], thresh=0.3, bucket_name='remars2019-revegas-imageslanding'):
         '''
         visualize detections in one image
         Parameters:
@@ -103,25 +102,21 @@ def get_key(val):
     return "key doesn't exist"
 
 
-def format_predictions(dets, height, width, player_dealer, thresh=0.5):
-    records = []
+def format_predictions(dets, height, width, player_dealer, thresh=0.3):
+    data = {'playerDealer': player_dealer,'preds': []}
     for det in dets:
         (klass, score, x0, y0, x1, y1) = det
         if score < thresh:
             continue
-        data = {
-            'playerDealer': player_dealer,
-            'cls': get_key(klass),
+        data['preds'].append({'cls': get_key(klass),
             'score': score,
             'xmin-ymin': [int(x0 * width),int(y0 * height)], # top left
-            'xmax-ymax': [int(x1 * width),int(y1 * height)] # bottom right
-        }
-        record = {
-            'Data': json.dumps(data),
-            'PartitionKey': str(hash(data['cls']))
-        }
-        records.append(record)
-    return records
+            'xmax-ymax': [int(x1 * width),int(y1 * height)]})
+    record = {
+        'Data': json.dumps(data),
+        'PartitionKey': str('sdafasd')
+    }
+    return record
 
 
 def handler(event, context):
@@ -155,12 +150,15 @@ def handler(event, context):
     # get playerid from sourcekey in prod
     player_dealer = dest_key_no_ext[-3:]
     dest_key = 'dest/' + dest_key_no_ext + '.png'
-
-    records = format_predictions(dets['prediction'], height=height, width=width, thresh=0.3, player_dealer=player_dealer)
-    print(json.dumps(records))
-    kinesis.put_records(
-        Records=records,
-        StreamName='remars-revegas-dedup-stream'
+    
+    print("Raw predictions for {}".format(source_key))
+    print(dets['prediction'])
+    record = format_predictions(dets['prediction'], height=height, width=width, thresh=0.3, player_dealer=player_dealer)
+    print(json.dumps(record))
+    kinesis.put_record(
+        StreamName='remars-revegas-dedup-stream',
+        Data=record['Data'],
+        PartitionKey=record['PartitionKey']
     )
 
 
