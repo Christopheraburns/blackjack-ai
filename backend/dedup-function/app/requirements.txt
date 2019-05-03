@@ -1,0 +1,2 @@
+numpy
+dynamodb_json
