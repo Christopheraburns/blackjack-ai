@@ -77,7 +77,8 @@ def lambda_handler(event, context):
     
     body_json = json.loads(event['body'])
     if body_json['arg'] == 'shuffle':
-        # reset the dynamodb table with shoe_reset_list_of_dicts
+        # in the case of shuffle, reset the count, and clear the dudup
+        # table for a new hand
         counts_table.put_item(Item=counts_default)
         for item in dedup_default:
             dedup_table.put_item(Item=item)
@@ -91,6 +92,8 @@ def lambda_handler(event, context):
         }
                 
     elif body_json['arg'] == 'new_round':
+        # in the case of new round, just reset the dedup table,
+        # don't reset the shoe counts
         for item in dedup_default:
             dedup_table.put_item(Item=item)
         return {

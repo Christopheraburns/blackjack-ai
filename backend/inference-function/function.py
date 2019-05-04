@@ -21,11 +21,14 @@ iot_data = boto3.client('iot-data')
 
 bucket_name = 'remars2019-revegas-imageslanding'
 
+# don't touch!!! used to convert sagemaker's integer classes back to card values. 
 class_map = {"AC": 0, "2C": 1, "3C": 2, "4C": 3, "5C": 4, "6C": 5, "7C": 6, "8C": 7, "9C": 8, "10C": 9, "JC": 10, "QC": 11, "KC": 12, "AD": 13, "2D": 14, "3D": 15, "4D": 16, "5D": 17, "6D": 18, "7D": 19, "8D": 20, "9D": 21, "10D": 22, "JD":23, "QD": 24, "KD": 25, "AH": 26, "2H": 27, "3H": 28, "4H": 29, "5H": 30, "6H": 31, "7H": 32, "8H": 33, "9H": 34, "10H": 35, "JH": 36, "QH": 37, "KH": 38, "AS": 39, "2S": 40, "3S": 41, "4S": 42, "5S": 43, "6S": 44, "7S": 45, "8S": 46, "9S": 47, "10S": 48, "JS": 49, "QS": 50, "KS": 51}
 
 object_categories = list(class_map.keys())
 
 def read_s3_contents_with_download(bucket_name, key):
+    '''Download the s3 event object from s3 to an in-memory stream
+    so you don't have to write to disk on lambda'''
     bytes_io = io.BytesIO()
     s3.Object(bucket_name, key).download_fileobj(bytes_io)
     return bytes_io
@@ -33,7 +36,8 @@ def read_s3_contents_with_download(bucket_name, key):
 
 def visualize_detection(img, dets, dest_key, player_dealer, height, width, classes=[], thresh=0.3, bucket_name='remars2019-revegas-imageslanding'):
         '''
-        visualize detections in one image
+        visualize detections in one image, store it in s3,
+        and send a message to IoT to display the image in a browser
         Parameters:
         ----------
         img : numpy.array
@@ -41,10 +45,21 @@ def visualize_detection(img, dets, dest_key, player_dealer, height, width, class
         dets : numpy.array
             ssd detections, numpy.array([[id, score, x1, y1, x2, y2]...])
             each row is one object
+        dest_key : string
+            what object key to use to store the visualization image in S3
+        player_dealer : string
+            which region does the image belong to: 'pl1', 'dlr'
+        height : int
+            height of the bounding box, used to convert sagemaker's normalized coordinates
+        width : int
+            width of the bounding box, used to covnert sagemaker's normalized
+            coordinates
         classes : tuple or list of str
             class names
         thresh : float
             score threshold
+        bucket_name : string
+            where to upload the resulting inference visualizations
         '''
         f = io.BytesIO()
         plt.clf()
@@ -95,6 +110,7 @@ def visualize_detection(img, dets, dest_key, player_dealer, height, width, class
 
 
 def get_key(val): 
+    '''utility to traverse class_map'''
     for key, value in class_map.items(): 
          if val == value: 
              return key 
@@ -103,6 +119,7 @@ def get_key(val):
 
 
 def format_predictions(dets, height, width, player_dealer, thresh=0.3):
+    '''takes predictions, formats them to be sent to Kinesis Data Stream'''
     data = {'playerDealer': player_dealer,'preds': []}
     for det in dets:
         (klass, score, x0, y0, x1, y1) = det
@@ -121,8 +138,11 @@ def format_predictions(dets, height, width, player_dealer, thresh=0.3):
 
 def handler(event, context):
     global bucket_name
+
+    # retreive a sagemaker endpoint from lambda env variable
     endpoint = str(os.environ['smendpoint'])
 
+    # read the s3 key from the s3 event lambda trigger
     source_key = event['Records'][0]['s3']['object']['key']
     print(source_key)
 
@@ -151,9 +171,11 @@ def handler(event, context):
     player_dealer = dest_key_no_ext[-3:]
     dest_key = 'dest/' + dest_key_no_ext + '.png'
     
+    # debugging, can comment this out
     print("Raw predictions for {}".format(source_key))
     print(dets['prediction'])
     record = format_predictions(dets['prediction'], height=height, width=width, thresh=0.3, player_dealer=player_dealer)
+    # debugging, can comment this out in prod
     print(json.dumps(record))
     kinesis.put_record(
         StreamName='remars-revegas-dedup-stream',
@@ -161,8 +183,5 @@ def handler(event, context):
         PartitionKey=record['PartitionKey']
     )
 
-
-
-    # TODO: Store pred viz in S3
     visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, height=height, width=width, classes=object_categories, thresh=0.3)
     return
