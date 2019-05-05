@@ -345,7 +345,7 @@ class App extends Component {
 
                     <div className="p-col-12 p-lg-12">
                         <div className="card" style={{textAlign: "center", background: "#fd4f00", color:"#ffffff" }}>
-                            <h1>re:MARS Vegas Challenge</h1>
+                            <h1>re:Vegas Challenge</h1>
                         </div>
                     </div>
                     <div className="p-col-12 p-lg-6">
