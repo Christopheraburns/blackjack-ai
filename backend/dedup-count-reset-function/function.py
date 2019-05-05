@@ -57,20 +57,20 @@ def lambda_handler(event, context):
 
     counts_default = {
         "counts": {
-            "A": 4 * deck_count,
-            "2": 4 * deck_count,
-            "3": 4 * deck_count,
-            "4": 4 * deck_count,
-            "5": 4 * deck_count,
-            "6": 4 * deck_count,
-            "7": 4 * deck_count,
-            "8": 4 * deck_count,
-            "9": 4 * deck_count,
-            "10": 4 * deck_count,
-            "J": 4 * deck_count,
-            "Q": 4 * deck_count,
-            "K": 4 * deck_count,
-            "shoe": 52 * deck_count
+            "01-A": 4 * deck_count,
+            "02-K": 4 * deck_count,
+            "03-Q": 4 * deck_count,
+            "04-J": 4 * deck_count,
+            "05-10": 4 * deck_count,
+            "06-9": 4 * deck_count,
+            "07-8": 4 * deck_count,
+            "08-7": 4 * deck_count,
+            "09-6": 4 * deck_count,
+            "10-5": 4 * deck_count,
+            "11-4": 4 * deck_count,
+            "12-3": 4 * deck_count,
+            "13-2": 4 * deck_count,
+            "14-shoe": 52 * deck_count
         },
         "tablename": "dayone"
     }

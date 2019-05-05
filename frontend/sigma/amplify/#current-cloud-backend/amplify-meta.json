@@ -19,7 +19,7 @@
 				"s3TemplateURL": "https://s3.amazonaws.com/sigma-20190408111953-deployment/amplify-cfn-templates/hosting/template.json",
 				"logicalId": "hostingS3AndCloudFront"
 			},
-			"lastPushTimeStamp": "2019-04-08T20:18:02.650Z",
+			"lastPushTimeStamp": "2019-05-04T21:26:14.423Z",
 			"output": {
 				"CloudFrontSecureURL": "https://d3b3v2rjnr7ydq.cloudfront.net",
 				"S3BucketSecureURL": "https://remars2019-revegas-webhosting.s3.amazonaws.com",
@@ -29,7 +29,7 @@
 				"HostingBucketName": "remars2019-revegas-webhosting",
 				"CloudFrontDomainName": "d3b3v2rjnr7ydq.cloudfront.net"
 			},
-			"lastPushDirHash": "+hl3NQseaQDwpfGDWUcp5OhFqQE="
+			"lastPushDirHash": "rwNW1rTNiUkvRVNA6HpBJUoK/CE="
 		}
 	},
 	"auth": {
@@ -40,7 +40,7 @@
 				"s3TemplateURL": "https://s3.amazonaws.com/sigma-20190408111953-deployment/amplify-cfn-templates/auth/cognitoc232b532-cloudformation-template.yml",
 				"logicalId": "authcognitoc232b532"
 			},
-			"lastPushTimeStamp": "2019-04-08T20:18:02.658Z",
+			"lastPushTimeStamp": "2019-05-04T21:26:14.423Z",
 			"output": {
 				"AppClientSecret": "1rg4sf5abol1kduiumhq5tnr4etuvff9kdnkl76lf0ko5cvm00o4",
 				"UserPoolId": "us-east-1_0Ig7HkLsf",
@@ -50,23 +50,8 @@
 				"IdentityPoolName": "cognitoc232b532_identitypool_c232b532",
 				"UserPoolName": "cognitoc232b532_userpool_c232b532"
 			},
-			"lastPushDirHash": "PQuP5RsvM0sEAoHrIV4N3BAFsyM="
+			"lastPushDirHash": "5r/OqzGk4Snhfk8PlTPzWGUxyhg="
 		}
 	},
-	"storage": {
-		"s3137d68e3": {
-			"service": "S3",
-			"providerPlugin": "awscloudformation",
-			"providerMetadata": {
-				"s3TemplateURL": "https://s3.amazonaws.com/sigma-20190408111953-deployment/amplify-cfn-templates/storage/s3-cloudformation-template.json",
-				"logicalId": "storages3137d68e3"
-			},
-			"lastPushTimeStamp": "2019-04-08T20:18:02.658Z",
-			"output": {
-				"BucketName": "sigma37ad4459797941c2a8cfd6e12406c48f",
-				"Region": "us-east-1"
-			},
-			"lastPushDirHash": "eiXW9DbAeOEHJIHjRsXymFs9ElA="
-		}
-	}
+	"storage": {}
 }
