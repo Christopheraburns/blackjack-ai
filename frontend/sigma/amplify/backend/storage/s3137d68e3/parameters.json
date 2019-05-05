@@ -1,9 +1,0 @@
-{
-    "bucketName": "sigma37ad4459797941c2a8cfd6e12406c48f",
-    "authPolicyName": "s3_amplify_137d68e3",
-    "unauthPolicyName": "s3_amplify_137d68e3",
-    "authRoleName": "sigma-20190408111953-authRole",
-    "unauthRoleName": "sigma-20190408111953-unauthRole",
-    "authPermissions": "rw",
-    "unauthPermissions": "r"
-}

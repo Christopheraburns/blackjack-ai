@@ -3,7 +3,8 @@ import json
 from base64 import b64decode
 from dynamodb_json import json_util
 import numpy as np
-from decimal import Decimal
+from decimal import *
+from collections import OrderedDict
 
 iot_data = boto3.client('iot-data')
 
@@ -90,24 +91,49 @@ def remove_second_ranksuit(new_preds_deduped):
     ASSUMPTION 2: this also assumes our ML Model 
     accurately detects both values on a card.'''
     classes = {
-            'A': 0,
-            '2': 0,
-            '3': 0,
-            '4': 0,
-            '5': 0,
-            '6': 0,
-            '7': 0,
-            '8': 0,
-            '9': 0,
-            '10': 0,
-            'J': 0,
-            'Q': 0,
-            'K': 0,
-            'shoe': 0
+            "01-A": 0,
+            "02-K": 0,
+            "03-Q": 0,
+            "04-J": 0,
+            "05-10": 0,
+            "06-9": 0,
+            "07-8": 0,
+            "08-7": 0,
+            "09-6": 0,
+            "10-5": 0,
+            "11-4": 0,
+            "12-3": 0,
+            "13-2": 0,
+            "14-shoe": 0
     }
     for preds in new_preds_deduped:
-        classes[preds['cls'][:-1]] = classes[preds['cls'][:-1]] + 1
-        classes['shoe'] = classes['shoe'] + 1
+        classes['14-shoe'] = classes['14-shoe'] + 1
+        if preds['cls'][:-1] == 'A':
+            classes['01-A'] = classes['01-A'] + 1
+        elif preds['cls'][:-1] == 'K':
+            classes['02-K'] = classes['02-K'] + 1
+        elif preds['cls'][:-1] == 'Q':
+            classes['03-Q'] = classes['03-Q'] + 1
+        elif preds['cls'][:-1] == 'J':
+            classes['04-J'] = classes['04-J'] + 1
+        elif preds['cls'][:-1] == '10':
+            classes['05-10'] = classes['05-10'] + 1
+        elif preds['cls'][:-1] == '9':
+            classes['06-9'] = classes['06-9'] + 1
+        elif preds['cls'][:-1] == '8':
+            classes['07-8'] = classes['07-8'] + 1
+        elif preds['cls'][:-1] == '7':
+            classes['08-7'] = classes['08-7'] + 1
+        elif preds['cls'][:-1] == '6':
+            classes['09-6'] = classes['09-6'] + 1
+        elif preds['cls'][:-1] == '5':
+            classes['10-5'] = classes['10-5'] + 1
+        elif preds['cls'][:-1] == '4':
+            classes['11-4'] = classes['11-4'] + 1
+        elif preds['cls'][:-1] == '3':
+            classes['12-3'] = classes['12-3'] + 1
+        elif preds['cls'][:-1] == '2':
+            classes['13-2'] = classes['13-2'] + 1
     for k, v in classes.items():
         classes[k] = int(v * 0.5)
     return classes
@@ -167,10 +193,37 @@ def handler(event, context):
     print("Counts after subtracting:")
     print(counts)
     counts_dec = json_util.loads(counts)
+    print("Counts after using the json utils:")
+    print(counts_dec)
     counts_table.put_item(Item=counts_dec)
 
+
+    
+
+    # generate probabilities:
+    ordered_dict = OrderedDict(sorted(counts_dec['counts'].items(), key=lambda t: t[0]))
+    counts_list = []
+    probabilities = []
+    cards_left_in_shoe = counts_dec['counts']['14-shoe']
+    for k,v in ordered_dict.items():
+        if k == '14-shoe':
+            continue
+        counts_list.append(v)
+        probability = (v/cards_left_in_shoe) * 100
+        probabilities.append(probability)
+    print("Just a count list")
+    print(counts_list)
+    print("Just a probabilities list")
+    print(probabilities)
+
+    probabilities_clean = list(np.around(np.array(probabilities), 2))
+    print("Just a probabilities list rounded")
+    print(probabilities_clean)
+    iot_data.publish(
+        topic='probabilities',
+        payload=json.dumps(probabilities_clean))
     iot_data.publish(
         topic='counts',
-        payload=json.dumps(json_util.loads(counts['counts'])))
+        payload=json.dumps(counts_list))
     
     return

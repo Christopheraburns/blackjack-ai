@@ -28,6 +28,7 @@ import 'primeflex/primeflex.css';
 import 'fullcalendar/dist/fullcalendar.css';
 import './layout/layout.css';
 import './App.css';
+import {Chart} from 'primereact/chart';
 import Amplify, { PubSub, API } from 'aws-amplify';
 import { AWSIoTProvider } from '@aws-amplify/pubsub/lib/Providers';
 
@@ -71,6 +72,36 @@ class App extends Component {
         constructor() {
             super();
             this.state = {
+                probabilities: [
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7
+                ],
+                countsdata: [
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16
+                ],
                 pl1imgsub: PubSub.subscribe('newimagespl1').subscribe({
                     next: data => this.setState({
                         img1 : data.value.s3Key
@@ -92,11 +123,51 @@ class App extends Component {
                     error: error => console.error(error),
                     close: () => console.log('Done'),
                 }),
+                pl4imgsub: PubSub.subscribe('newimagespl4').subscribe({
+                    next: data => this.setState({
+                        img4 : data.value.s3Key
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
+                pl5imgsub: PubSub.subscribe('newimagespl5').subscribe({
+                    next: data => this.setState({
+                        img5 : data.value.s3Key
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
+                dlrimgsub: PubSub.subscribe('newimagesdlr').subscribe({
+                    next: data => this.setState({
+                        img6 : data.value.s3Key
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
+                countssub: PubSub.subscribe('counts').subscribe({
+                    next: data => this.setState({
+                        countsdata : data.value
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
+                probabilitiessub: PubSub.subscribe('probabilities').subscribe({
+                    next: data => this.setState({
+                        probabilities : data.value
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
                 img1 : "transparentPix.png",
                 img2 : "transparentPix.png",
                 img3 : "transparentPix.png",
+                img4 : "transparentPix.png",
+                img5 : "transparentPix.png",
+                img6 : "transparentPix.png",
                 reset_visible: false,
                 shuffle_visible: false
+
+                
             };
             this.onResetClick = this.onResetClick.bind(this);
             this.onResetHideYes = this.onResetHideYes.bind(this);
@@ -113,6 +184,38 @@ class App extends Component {
                 itemData: response.data
               });
             });
+            this.setState({
+                countsdata: [
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16,
+                    16
+                ],
+                probabilities: [
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7,
+                    7.7
+                ]
+            })
           }
 
         postDedupReset() {
@@ -185,6 +288,51 @@ class App extends Component {
                     <Button style={{textAlign: "center", background: "#a7a9ac", color:"#ffffff" }} label="No" onClick={this.onResetHideNo} className="p-button-secondary" />
                 </div>
             );
+
+            let chartdata = {
+                labels: ['Ace', 'King', 'Queen', 'Jack', 'Ten', 'Nine', 'Eight', 'Seven', 'Six', 'Five', 'Four', 'Three', 'Two'],
+                datasets: [
+                    {
+                        type: 'line',
+                        label: 'Probabilities',
+                        borderColor: '#3c3533',
+                        yAxisID: 'y-axis-1',
+                        borderWidth: 2,
+                        fill: true,
+                        data: this.state.probabilities
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Counts',
+                        backgroundColor: '#b5be00',
+                        yAxisID: 'y-axis-1',
+                        fill: true,
+                        data: this.state.countsdata
+                    }
+                ]
+            };
+      
+            const multiAxisOptions = {
+                responsive: true,
+                tooltips: {
+                  mode: 'index',
+                  intersect: true
+                },
+                scales: {
+                  yAxes: [
+                    {
+                      type: 'linear',
+                      display: true,
+                      position: 'left',
+                      id: 'y-axis-1',
+                      ticks: {
+                        min: 0,
+                        max: 20
+                      }
+                    }
+                  ]
+                }
+              };
     
             return (
                 <div className="p-grid p-fluid">
@@ -197,7 +345,7 @@ class App extends Component {
 
                     <div className="p-col-12 p-lg-12">
                         <div className="card" style={{textAlign: "center", background: "#fd4f00", color:"#ffffff" }}>
-                            <h1>re:MARS re:Vegas Blackjack Challenge</h1>
+                            <h1>re:MARS Vegas Challenge</h1>
                         </div>
                     </div>
                     <div className="p-col-12 p-lg-6">
@@ -231,6 +379,32 @@ class App extends Component {
                         <p>
                                 <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img3} alt='pix' width="300" height="300"/>
                         </p>
+                        </Panel>
+                    </div>
+                    <div className="p-col-12 p-md-6 p-lg-4">
+                        <Panel header="Player 4" style={{height: '100%'}}>
+                        <p>
+                                <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img4} alt='pix' width="300" height="300"/>
+                        </p>
+                        </Panel>
+                    </div>
+                    <div className="p-col-12 p-md-6 p-lg-4">
+                        <Panel header="Player 5" style={{height: '100%'}}>
+                        <p>
+                                <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img5} alt='pix' width="300" height="300"/>
+                        </p>
+                        </Panel>
+                    </div>
+                    <div className="p-col-12 p-md-6 p-lg-4">
+                        <Panel header="Dealer" style={{height: '100%'}}>
+                        <p>
+                                <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img6} alt='pix' width="300" height="300"/>
+                        </p>
+                        </Panel>
+                    </div>
+                    <div className="p-col-12 p-md-6 p-lg-12">
+                        <Panel header="Chart" style={{height: '100%'}}>
+                            <Chart type="bar" data={chartdata} options={multiAxisOptions} />
                         </Panel>
                     </div>
                 </div>

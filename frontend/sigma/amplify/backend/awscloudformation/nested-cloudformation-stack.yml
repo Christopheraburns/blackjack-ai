@@ -82,7 +82,10 @@
 			"Type": "AWS::CloudFormation::Stack",
 			"Properties": {
 				"TemplateURL": "https://s3.amazonaws.com/sigma-20190408111953-deployment/amplify-cfn-templates/hosting/template.json",
-				"Parameters": {}
+				"Parameters": {
+					"bucketName": "remars2019-revegas-webhosting",
+					"env": "NONE"
+				}
 			}
 		},
 		"authcognitoc232b532": {
@@ -90,6 +93,24 @@
 			"Properties": {
 				"TemplateURL": "https://s3.amazonaws.com/sigma-20190408111953-deployment/amplify-cfn-templates/auth/cognitoc232b532-cloudformation-template.yml",
 				"Parameters": {
+					"authRoleName": {
+						"Ref": "AuthRoleName"
+					},
+					"unauthRoleName": {
+						"Ref": "UnauthRoleName"
+					},
+					"authRoleArn": {
+						"Fn::GetAtt": [
+							"AuthRole",
+							"Arn"
+						]
+					},
+					"unauthRoleArn": {
+						"Fn::GetAtt": [
+							"UnauthRole",
+							"Arn"
+						]
+					},
 					"identityPoolName": "cognitoc232b532_identitypool_c232b532",
 					"allowUnauthenticatedIdentities": true,
 					"thirdPartyAuth": false,
@@ -127,26 +148,10 @@
 					"userpoolClientSetAttributes": false,
 					"useDefault": "default",
 					"unAuthRoleName": "sigma-20190408111953-unauthRole",
-					"authRoleName": "sigma-20190408111953-authRole",
 					"unAuthRoleArn": "arn:aws:iam::150520346847:role/sigma-20190408111953-unauthRole",
-					"authRoleArn": "arn:aws:iam::150520346847:role/sigma-20190408111953-authRole",
 					"resourceName": "cognitoc232b532",
-					"authSelections": "identityPoolAndUserPool"
-				}
-			}
-		},
-		"storages3137d68e3": {
-			"Type": "AWS::CloudFormation::Stack",
-			"Properties": {
-				"TemplateURL": "https://s3.amazonaws.com/sigma-20190408111953-deployment/amplify-cfn-templates/storage/s3-cloudformation-template.json",
-				"Parameters": {
-					"bucketName": "sigma37ad4459797941c2a8cfd6e12406c48f",
-					"authPolicyName": "s3_amplify_137d68e3",
-					"unauthPolicyName": "s3_amplify_137d68e3",
-					"authRoleName": "sigma-20190408111953-authRole",
-					"unauthRoleName": "sigma-20190408111953-unauthRole",
-					"authPermissions": "rw",
-					"unauthPermissions": "r"
+					"authSelections": "identityPoolAndUserPool",
+					"env": "NONE"
 				}
 			}
 		}
