@@ -24,9 +24,10 @@ s3 = s3_resource.meta.client
 client = greengrasssdk.client('iot-data')
 
 
-def crop_image(img, crop_area, new_bytesio):
+def crop_image(img, crop_area, crop_img_bytes):
     cropped_image = img.crop(crop_area)
-    cropped_image.save(new_bytesio)
+    cropped_image.save(crop_img_bytes, 'jpeg')
+    
     
 
 def take_pics(bucket):
@@ -67,6 +68,7 @@ def take_pics(bucket):
         to s3 with the suffix on the key name. then send a message to IoT'''
         crop_img_bytes = io.BytesIO()
         crop_image(img_whole, v, crop_img_bytes)
+        crop_img_bytes.seek(0)
         img_name = 'images/' + str(uuid.uuid4()) + k + ".jpg"
         s3.upload_fileobj(crop_img_bytes, bucket, img_name, ExtraArgs={'ContentType': 'image/jpeg'})
         payload = {'s3Key': img_name}
@@ -74,13 +76,13 @@ def take_pics(bucket):
     
     '''Use this to upload the whole image and measure the 6 regions, then
     comment it out to speed things up'''
-    s3.upload_fileobj(stream, bucket, 'raw/' + str(uuid.uuid4()) + ".jpg", ExtraArgs={'ContentType': 'image/jpeg'})
+    # s3.upload_fileobj(stream, bucket, 'raw/' + str(uuid.uuid4()) + ".jpg", ExtraArgs={'ContentType': 'image/jpeg'})
 
         
 
 while 1:
     take_pics(bucket=bucket)
-    sleep(2)
+    sleep(5)
 
 
 def function_handler(event, context):

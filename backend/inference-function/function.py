@@ -34,7 +34,7 @@ def read_s3_contents_with_download(bucket_name, key):
     return bytes_io
 
 
-def visualize_detection(img, dets, dest_key, player_dealer, height, width, classes=[], thresh=0.3, bucket_name='remars2019-revegas-imageslanding'):
+def visualize_detection(img, dets, dest_key, player_dealer, height, width, classes=[], thresh=0.1, bucket_name='remars2019-revegas-imageslanding'):
         '''
         visualize detections in one image, store it in s3,
         and send a message to IoT to display the image in a browser
@@ -118,7 +118,7 @@ def get_key(val):
     return "key doesn't exist"
 
 
-def format_predictions(dets, height, width, player_dealer, thresh=0.3):
+def format_predictions(dets, height, width, player_dealer, thresh=0.1):
     '''takes predictions, formats them to be sent to Kinesis Data Stream'''
     data = {'playerDealer': player_dealer,'preds': []}
     for det in dets:
@@ -174,7 +174,7 @@ def handler(event, context):
     # debugging, can comment this out
     print("Raw predictions for {}".format(source_key))
     print(dets['prediction'])
-    record = format_predictions(dets['prediction'], height=height, width=width, thresh=0.3, player_dealer=player_dealer)
+    record = format_predictions(dets['prediction'], height=height, width=width, thresh=0.1, player_dealer=player_dealer)
     # debugging, can comment this out in prod
     print(json.dumps(record))
     kinesis.put_record(
@@ -183,5 +183,5 @@ def handler(event, context):
         PartitionKey=record['PartitionKey']
     )
 
-    visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, height=height, width=width, classes=object_categories, thresh=0.3)
+    visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, height=height, width=width, classes=object_categories, thresh=0.1)
     return

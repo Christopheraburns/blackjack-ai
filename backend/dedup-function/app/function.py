@@ -25,6 +25,25 @@ def decode_kinesis(records):
         kinesis_json.append(line)
     return kinesis_json
 
+def get_hands(deduped_records_dict):
+    hands = {}
+    for x in deduped_records_dict:
+        player_dealer = x['playerDealer']
+        hands[player_dealer] = []
+        '''
+        {
+            'pl4': ['2','2','K'],
+
+        }
+        '''
+        for pred in x['preds']:
+            cards = pred['cls'][:-1]
+            hands[player_dealer].append(cards)
+        remove_duplicates = list(dict.fromkeys(hands[player_dealer]))
+        hands[player_dealer] = remove_duplicates
+    return hands
+
+
 
 def deduped_records(new_preds):
     '''where the magic happens'''
@@ -154,6 +173,10 @@ def handler(event, context):
     print("Deduped preds:")
     print(deduped_records_dict)
     print(new_preds_deduped)
+
+    hands = get_hands(deduped_records_dict)
+    print("Player/Dealer Hands:")
+    print(hands)
 
     for item in deduped_records_dict:
         deduped_records_dump = json.dumps(item)
