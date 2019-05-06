@@ -37,7 +37,7 @@ def get_hands(deduped_records_dict):
         }
         '''
         for pred in x['preds']:
-            cards = pred['cls'][:-1]
+            cards = pred['cls']
             hands[player_dealer].append(cards)
         remove_duplicates = list(dict.fromkeys(hands[player_dealer]))
         hands[player_dealer] = remove_duplicates
