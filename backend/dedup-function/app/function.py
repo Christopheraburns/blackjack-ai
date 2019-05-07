@@ -10,11 +10,14 @@ iot_data = boto3.client('iot-data')
 
 dedup_table_name='dedup-table'
 counts_table_name='counts-table'
+dealer_hand_table='dealerhand'
 region = 'us-east-1'
 
 dynamodb_resource = boto3.resource('dynamodb', region_name=region)
 dedup_table = dynamodb_resource.Table(dedup_table_name)
 counts_table = dynamodb_resource.Table(counts_table_name)
+dealer_table = dynamodb_resource.Table(dealer_hand_table)
+lambda_client = boto3.client('lambda')
 
 
 def decode_kinesis(records):
@@ -29,18 +32,27 @@ def get_hands(deduped_records_dict):
     hands = {}
     for x in deduped_records_dict:
         player_dealer = x['playerDealer']
-        hands[player_dealer] = []
+        hands[player_dealer] = {}
         '''
         {
-            'pl4': ['2','2','K'],
+            'pl4': {
+                '2': 2,
+                'K': 1
+            },
+            'dlr': {
 
+            }
         }
         '''
         for pred in x['preds']:
-            cards = pred['cls']
-            hands[player_dealer].append(cards)
-        remove_duplicates = list(dict.fromkeys(hands[player_dealer]))
-        hands[player_dealer] = remove_duplicates
+            card = pred['cls'][:-1]
+            if card not in hands[player_dealer]:
+                hands[player_dealer][card] = 1
+            else:
+                hands[player_dealer][card] = hands[player_dealer][card] + 1
+    for k, v in hands.items():
+        for k1, v1 in hands[k].items():
+            hands[k][k1] = int(v1 * 0.5)
     return hands
 
 
@@ -177,6 +189,17 @@ def handler(event, context):
     hands = get_hands(deduped_records_dict)
     print("Player/Dealer Hands:")
     print(hands)
+    # for hand in hands.items():
+    #     if 'dlr' not in hand:
+    #         # submit the hand to the hueristic function. the function will check if the dealer's hand has been processed, and backoff until it's there
+    #         lambda_client.invoke(
+    #             FunctionName='blah',
+    #             InvocationType='Event',
+    #             Payload=json.dumps(hand)
+    #         )
+    #     else:
+    #         # store the dealer hand so the heuristic function can read the dealer's up card
+    #         dealer_table.put_item(Item=hand)
 
     for item in deduped_records_dict:
         deduped_records_dump = json.dumps(item)

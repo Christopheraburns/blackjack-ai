@@ -131,7 +131,7 @@ def format_predictions(dets, height, width, player_dealer, thresh=0.1):
             'xmax-ymax': [int(x1 * width),int(y1 * height)]})
     record = {
         'Data': json.dumps(data),
-        'PartitionKey': str('sdafasd')
+        'PartitionKey': str(hash(player_dealer))
     }
     return record
 
