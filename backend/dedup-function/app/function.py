@@ -19,6 +19,7 @@ counts_table = dynamodb_resource.Table(counts_table_name)
 dealer_table = dynamodb_resource.Table(dealer_hand_table)
 lambda_client = boto3.client('lambda')
 
+getcontext().rounding = ROUND_HALF_UP
 
 def decode_kinesis(records):
     '''convert b64 encoded kinesis data records to list of json objects'''
@@ -52,7 +53,7 @@ def get_hands(deduped_records_dict):
                 hands[player_dealer][card] = hands[player_dealer][card] + 1
     for k, v in hands.items():
         for k1, v1 in hands[k].items():
-            hands[k][k1] = int(v1 * 0.5)
+            hands[k][k1] = int(Decimal.to_integral_value(Decimal(v1) /2))
     return hands
 
 
@@ -166,7 +167,7 @@ def remove_second_ranksuit(new_preds_deduped):
         elif preds['cls'][:-1] == '2':
             classes['13-2'] = classes['13-2'] + 1
     for k, v in classes.items():
-        classes[k] = int(v * 0.5)
+        classes[k] = int(Decimal.to_integral_value(Decimal(v) /2))
     return classes
 
 def handler(event, context):
