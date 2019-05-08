@@ -144,6 +144,41 @@ class App extends Component {
                     error: error => console.error(error),
                     close: () => console.log('Done'),
                 }),
+                pl1guidancesub: PubSub.subscribe('guidancepl1').subscribe({
+                    next: data => this.setState({
+                        pl1guidance : data.value.guidance
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
+                pl2guidancesub: PubSub.subscribe('guidancepl2').subscribe({
+                    next: data => this.setState({
+                        pl2guidance : data.value.guidance
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
+                pl3guidancesub: PubSub.subscribe('guidancepl3').subscribe({
+                    next: data => this.setState({
+                        pl3guidance : data.value.guidance
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
+                pl4guidancesub: PubSub.subscribe('guidancepl4').subscribe({
+                    next: data => this.setState({
+                        pl4guidance : data.value.guidance
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
+                pl5guidancesub: PubSub.subscribe('guidancepl5').subscribe({
+                    next: data => this.setState({
+                        pl5guidance : data.value.guidance
+                    }),
+                    error: error => console.error(error),
+                    close: () => console.log('Done'),
+                }),
                 countssub: PubSub.subscribe('counts').subscribe({
                     next: data => this.setState({
                         countsdata : data.value
@@ -363,42 +398,52 @@ class App extends Component {
                     <div className="p-col-12 p-md-6 p-lg-4">
                         <Panel header="Player 1" style={{height: '100%'}}>
                             <p>
-                                <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img1} alt='pix' width="325" height="300"/>
+                                <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img1} alt='pix' />
+                                <p style={{fontSize: 
+                                "20px", textAlign: "center", color: "#FFFFFF", backgroundColor: "#25cbd3"}}>{this.state.pl1guidance}</p>
                             </p>
                         </Panel>
                     </div>
                     <div className="p-col-12 p-md-6 p-lg-4">
                         <Panel header="Player 2" style={{height: '100%'}}>
                         <p>
-                                <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img2} alt='pix' width="300" height="300"/>
+                                <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img2} alt='pix' />
+                                <p style={{fontSize: 
+                                "20px", textAlign: "center", color: "#FFFFFF", backgroundColor: "#25cbd3"}}>{this.state.pl2guidance}</p>
                         </p>
                         </Panel>
                     </div>
                     <div className="p-col-12 p-md-6 p-lg-4">
                         <Panel header="Player 3" style={{height: '100%'}}>
                         <p>
-                                <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img3} alt='pix' width="300" height="300"/>
+                                <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img3} alt='pix' />
+                                <p style={{fontSize: 
+                                "20px", textAlign: "center", color: "#FFFFFF", backgroundColor: "#25cbd3"}}>{this.state.pl3guidance}</p>
                         </p>
                         </Panel>
                     </div>
                     <div className="p-col-12 p-md-6 p-lg-4">
                         <Panel header="Player 4" style={{height: '100%'}}>
                         <p>
-                                <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img4} alt='pix' width="300" height="300"/>
+                                <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img4} alt='pix' />
+                                <p style={{fontSize: 
+                                "20px", textAlign: "center", color: "#FFFFFF", backgroundColor: "#25cbd3"}}>{this.state.pl4guidance}</p>
                         </p>
                         </Panel>
                     </div>
                     <div className="p-col-12 p-md-6 p-lg-4">
                         <Panel header="Player 5" style={{height: '100%'}}>
-                        <p>
-                                <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img5} alt='pix' width="300" height="300"/>
-                        </p>
+                            <p>
+                                    <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img5} alt='pix'/>
+                            </p>
+                            <p style={{fontSize: 
+                                "20px", textAlign: "center", color: "#FFFFFF", backgroundColor: "#25cbd3"}}>{this.state.pl5guidance}</p>
                         </Panel>
                     </div>
                     <div className="p-col-12 p-md-6 p-lg-4">
                         <Panel header="Dealer" style={{height: '100%'}}>
                         <p>
-                                <img src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img6} alt='pix' width="300" height="300"/>
+                                <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img6} alt='pix'/>
                         </p>
                         </Panel>
                     </div>
