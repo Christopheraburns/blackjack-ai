@@ -263,8 +263,10 @@ def handler(event, context):
     counts_list = []
     probabilities = []
     cards_left_in_shoe = counts_dec['counts']['14-shoe']
+    ordered_dict['00-HiCount'] = ordered_dict['02-K'] + ordered_dict['03-Q'] + ordered_dict['04-J'] + ordered_dict['05-10']
+    ordered_dict.move_to_end('00-HiCount', last=False)
     for k,v in ordered_dict.items():
-        if k == '14-shoe':
+        if k == '14-shoe' or k == '02-K' or k == '03-Q' or k == '04-J' or k == '05-10':
             continue
         counts_list.append(v)
         probability = (v/cards_left_in_shoe) * 100
