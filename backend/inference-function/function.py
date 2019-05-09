@@ -7,7 +7,7 @@ import random
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import os
-# from PIL import Image
+from PIL import Image
 
 
 # start AWS resources in global context
@@ -135,6 +135,13 @@ def format_predictions(dets, height, width, player_dealer, thresh=0.1):
     }
     return record
 
+def read_background():
+    '''Download the s3 event object from s3 to an in-memory stream
+    so you don't have to write to disk on lambda'''
+    bytes_io = io.BytesIO()
+    s3.Object('remars2019-revegas-statichosting', 'tablebackground.jpg').download_fileobj(bytes_io)
+    return bytes_io
+
 
 def handler(event, context):
     global bucket_name
@@ -147,7 +154,19 @@ def handler(event, context):
     print(source_key)
 
     img = read_s3_contents_with_download(bucket_name, source_key)
-    img_file=mpimg.imread(img, 'jpg')
+    pil_img = Image.open(img)
+    pil_img_size = pil_img.size
+    pil_img = pil_img.resize((int(pil_img_size[0]*1.35),int(pil_img_size[1]*1.35)), Image.BILINEAR)
+
+
+    background_bytes = read_background()
+    new_img = Image.open(background_bytes)
+    # new_img_size = new_img.size
+    new_img.paste(pil_img, (150,20))
+    new_img_bytes = io.BytesIO()
+    new_img.save(new_img_bytes, 'jpeg')
+
+    img_file=mpimg.imread(new_img_bytes, 'jpg')
     height = img_file.shape[0]
     width = img_file.shape[1]
 
@@ -163,7 +182,7 @@ def handler(event, context):
     # im = im.rotate(-45)
     # im.save(new_bytes, "JPEG")
     # dets = json.loads(real_time_pred.predict(new_bytes.getvalue()))
-    dets = json.loads(real_time_pred.predict(img.getvalue()))
+    dets = json.loads(real_time_pred.predict(new_img_bytes.getvalue()))
 
     dest_key_base = os.path.basename(source_key)
     dest_key_no_ext = os.path.splitext(dest_key_base)[0]
@@ -174,7 +193,7 @@ def handler(event, context):
     # debugging, can comment this out
     print("Raw predictions for {}".format(source_key))
     print(dets['prediction'])
-    record = format_predictions(dets['prediction'], height=height, width=width, thresh=0.1, player_dealer=player_dealer)
+    record = format_predictions(dets['prediction'], height=height, width=width, thresh=0.2, player_dealer=player_dealer)
     # debugging, can comment this out in prod
     print(json.dumps(record))
     kinesis.put_record(
@@ -183,5 +202,5 @@ def handler(event, context):
         PartitionKey=record['PartitionKey']
     )
 
-    visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, height=height, width=width, classes=object_categories, thresh=0.1)
+    visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, height=height, width=width, classes=object_categories, thresh=0.2)
     return
