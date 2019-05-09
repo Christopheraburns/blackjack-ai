@@ -10,7 +10,7 @@ iot_data = boto3.client('iot-data')
 
 dedup_table_name='dedup-table'
 counts_table_name='counts-table'
-dealer_hand_table='dealerhand'
+dealer_hand_table='dealer-hand'
 region = 'us-east-1'
 
 dynamodb_resource = boto3.resource('dynamodb', region_name=region)
@@ -19,6 +19,7 @@ counts_table = dynamodb_resource.Table(counts_table_name)
 dealer_table = dynamodb_resource.Table(dealer_hand_table)
 lambda_client = boto3.client('lambda')
 
+getcontext().rounding = ROUND_HALF_UP
 
 def decode_kinesis(records):
     '''convert b64 encoded kinesis data records to list of json objects'''
@@ -52,7 +53,7 @@ def get_hands(deduped_records_dict):
                 hands[player_dealer][card] = hands[player_dealer][card] + 1
     for k, v in hands.items():
         for k1, v1 in hands[k].items():
-            hands[k][k1] = int(v1 * 0.5)
+            hands[k][k1] = int(Decimal.to_integral_value(Decimal(v1) /2))
     return hands
 
 
@@ -166,7 +167,7 @@ def remove_second_ranksuit(new_preds_deduped):
         elif preds['cls'][:-1] == '2':
             classes['13-2'] = classes['13-2'] + 1
     for k, v in classes.items():
-        classes[k] = int(v * 0.5)
+        classes[k] = int(Decimal.to_integral_value(Decimal(v) /2))
     return classes
 
 def handler(event, context):
@@ -189,17 +190,28 @@ def handler(event, context):
     hands = get_hands(deduped_records_dict)
     print("Player/Dealer Hands:")
     print(hands)
-    # for hand in hands.items():
-    #     if 'dlr' not in hand:
-    #         # submit the hand to the hueristic function. the function will check if the dealer's hand has been processed, and backoff until it's there
-    #         lambda_client.invoke(
-    #             FunctionName='blah',
-    #             InvocationType='Event',
-    #             Payload=json.dumps(hand)
-    #         )
-    #     else:
-    #         # store the dealer hand so the heuristic function can read the dealer's up card
-    #         dealer_table.put_item(Item=hand)
+    '''
+        {
+            'pl4': {
+                '2': 2,
+                'K': 1
+            },
+            'dlr': {
+
+            }
+        }
+        '''
+    for handkey, value in hands.items():
+        if 'dlr' not in handkey:
+            # submit the hand to the hueristic function. the function will check if the dealer's hand has been processed, and backoff until it's there
+            lambda_client.invoke(
+                FunctionName='heuristic-function',
+                InvocationType='Event',
+                Payload=json.dumps({handkey: value})
+            )
+        else:
+            # store the dealer hand so the heuristic function can read the dealer's up card
+            dealer_table.put_item(Item={'dlr': handkey,'hand': value})
 
     for item in deduped_records_dict:
         deduped_records_dump = json.dumps(item)

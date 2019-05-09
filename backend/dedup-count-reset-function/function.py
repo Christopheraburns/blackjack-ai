@@ -5,11 +5,13 @@ import os
 
 dedup_table_name='dedup-table'
 counts_table_name='counts-table'
+dealer_hand_table='dealer-hand'
 region = 'us-east-1'
 
 dynamodb_resource = boto3.resource('dynamodb', region_name=region)
 dedup_table = dynamodb_resource.Table(dedup_table_name)
 counts_table = dynamodb_resource.Table(counts_table_name)
+dealer_table = dynamodb_resource.Table(dealer_hand_table)
 
 
 '''
@@ -75,11 +77,16 @@ def lambda_handler(event, context):
         "tablename": "dayone"
     }
     
+    dealer_default = {
+        'dlr': 'dlr'
+    }
+
     body_json = json.loads(event['body'])
     if body_json['arg'] == 'shuffle':
         # in the case of shuffle, reset the count, and clear the dudup
         # table for a new hand
         counts_table.put_item(Item=counts_default)
+        dealer_table.put_item(Item=dealer_default)
         for item in dedup_default:
             dedup_table.put_item(Item=item)
         return {
@@ -96,6 +103,7 @@ def lambda_handler(event, context):
         # don't reset the shoe counts
         for item in dedup_default:
             dedup_table.put_item(Item=item)
+        dealer_table.put_item(Item=dealer_default)
         return {
             'statusCode': 200,
             'body': json.dumps('Dedup table is reset!'),
