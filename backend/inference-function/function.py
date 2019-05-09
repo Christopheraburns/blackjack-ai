@@ -7,7 +7,7 @@ import random
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import os
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 
 # start AWS resources in global context
@@ -154,21 +154,19 @@ def handler(event, context):
     print(source_key)
 
     img = read_s3_contents_with_download(bucket_name, source_key)
-    pil_img = Image.open(img)
-    pil_img_size = pil_img.size
-    pil_img = pil_img.resize((int(pil_img_size[0]*1.35),int(pil_img_size[1]*1.35)), Image.BILINEAR)
+    # pil_img = Image.open(img)
+    # pil_img_size = pil_img.size
+    # pil_img = pil_img.resize((512,512), Image.BILINEAR)
+
+    # background_bytes = read_background()
+    # new_img = Image.open(background_bytes)
+    # # new_img_size = new_img.size
+    # # new_img.paste(pil_img, (150,20))
+    # new_img.paste(pil_img)
+    # new_img_bytes = io.BytesIO()
+    # pil_img.save(new_img_bytes, 'jpeg')
 
 
-    background_bytes = read_background()
-    new_img = Image.open(background_bytes)
-    # new_img_size = new_img.size
-    new_img.paste(pil_img, (150,20))
-    new_img_bytes = io.BytesIO()
-    new_img.save(new_img_bytes, 'jpeg')
-
-    img_file=mpimg.imread(new_img_bytes, 'jpg')
-    height = img_file.shape[0]
-    width = img_file.shape[1]
 
     real_time_pred = sagemaker.predictor.RealTimePredictor(
         endpoint=endpoint,
@@ -179,21 +177,28 @@ def handler(event, context):
 
     # new_bytes = io.BytesIO()
     # im = Image.open(img)
-    # im = im.rotate(-45)
+    # # im = im.rotate(-45)
+    # enhancer = ImageEnhance.Brightness(im)
+    # # im = enhancer.enhance(0.9)
+    # im = im.resize((512,512), Image.BILINEAR)
     # im.save(new_bytes, "JPEG")
     # dets = json.loads(real_time_pred.predict(new_bytes.getvalue()))
-    dets = json.loads(real_time_pred.predict(new_img_bytes.getvalue()))
+    dets = json.loads(real_time_pred.predict(img.getvalue()))
 
     dest_key_base = os.path.basename(source_key)
     dest_key_no_ext = os.path.splitext(dest_key_base)[0]
     # get playerid from sourcekey in prod
     player_dealer = dest_key_no_ext[-3:]
     dest_key = 'dest/' + dest_key_no_ext + '.png'
+
+    img_file=mpimg.imread(img, 'jpg')
+    height = img_file.shape[0]
+    width = img_file.shape[1]
     
     # debugging, can comment this out
     print("Raw predictions for {}".format(source_key))
     print(dets['prediction'])
-    record = format_predictions(dets['prediction'], height=height, width=width, thresh=0.2, player_dealer=player_dealer)
+    record = format_predictions(dets['prediction'], height=height, width=width, thresh=0.1, player_dealer=player_dealer)
     # debugging, can comment this out in prod
     print(json.dumps(record))
     kinesis.put_record(
@@ -202,5 +207,5 @@ def handler(event, context):
         PartitionKey=record['PartitionKey']
     )
 
-    visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, height=height, width=width, classes=object_categories, thresh=0.2)
+    visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, height=height, width=width, classes=object_categories, thresh=0.1)
     return

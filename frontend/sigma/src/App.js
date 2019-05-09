@@ -34,6 +34,7 @@ import { AWSIoTProvider } from '@aws-amplify/pubsub/lib/Providers';
 
 import awsmobile from './aws-exports';
 import { ConfirmSignIn, SignIn, withAuthenticator, Greetings, SignOut } from 'aws-amplify-react';
+import { SignUp } from 'aws-amplify-react/dist/Auth';
 
 Amplify.configure(awsmobile);
 
@@ -73,10 +74,7 @@ class App extends Component {
             super();
             this.state = {
                 probabilities: [
-                    7.7,
-                    7.7,
-                    7.7,
-                    7.7,
+                    30.8,
                     7.7,
                     7.7,
                     7.7,
@@ -88,10 +86,7 @@ class App extends Component {
                     7.7
                 ],
                 countsdata: [
-                    16,
-                    16,
-                    16,
-                    16,
+                    64,
                     16,
                     16,
                     16,
@@ -221,7 +216,7 @@ class App extends Component {
             });
             this.setState({
                 countsdata: [
-                    16,
+                    64,
                     16,
                     16,
                     16,
@@ -236,7 +231,7 @@ class App extends Component {
                     16
                 ],
                 probabilities: [
-                    7.7,
+                    30.8,
                     7.7,
                     7.7,
                     7.7,
@@ -325,7 +320,7 @@ class App extends Component {
             );
 
             let chartdata = {
-                labels: ['Ace', 'King', 'Queen', 'Jack', 'Ten', 'Nine', 'Eight', 'Seven', 'Six', 'Five', 'Four', 'Three', 'Two'],
+                labels: ['Cards Worth 10', 'Ace', 'Nine', 'Eight', 'Seven', 'Six', 'Five', 'Four', 'Three', 'Two'],
                 datasets: [
                     {
                         type: 'line',
@@ -359,11 +354,7 @@ class App extends Component {
                       type: 'linear',
                       display: true,
                       position: 'left',
-                      id: 'y-axis-1',
-                      ticks: {
-                        min: 0,
-                        max: 20
-                      }
+                      id: 'y-axis-1'
                     }
                   ]
                 }
@@ -460,3 +451,5 @@ class App extends Component {
 export default withAuthenticator(App, true, [
     <SignIn/>
     ]);
+
+// export default withAuthenticator(App, true);
