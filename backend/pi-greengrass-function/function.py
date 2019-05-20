@@ -3,6 +3,7 @@ import logging
 import json
 import picamera
 import boto3
+import os
 from botocore.config import Config
 import io
 import numpy as np
@@ -11,6 +12,8 @@ import uuid
 from datetime import datetime
 from threading import Timer
 from time import sleep
+from goprocam import GoProCamera, constants
+
 
 '''Upload to S3 using Transfer Accelerate from the local
 pi device'''
@@ -28,7 +31,51 @@ def crop_image(img, crop_area, crop_img_bytes):
     cropped_image = img.crop(crop_area)
     cropped_image.save(crop_img_bytes, 'jpeg')
     
-    
+
+# TODO this function is a clone of take_pics.  crop_areas should be moved to global to avoid making multiple changes
+
+def take_gopro_pics(bucket):
+    '''
+        Calls GoPro (Hero 7 Black) RESTFul API to take and download a picture from the camera
+        * Requires this python library: https://github.com/KonradIT/gopro-py-api (pip install goprocam)
+        * Camera must be powered on
+        * The device running this code must be connected to the camera's wifi network
+        * SSID is GP26185174 (Password is available to view on the GoPro camera connections - settings
+        * Must be a 2.6GHZ NIC
+
+    :param bucket:
+    :return: void
+    '''
+    gpCam = GoProCamera.GoPro()
+    gpCam.downloadLastMedia(gpCam.take_photo(0.1), "allhands.jpg")
+
+    while True:
+        exists = os.path.isfile("allhands.jpg")
+        if exists:
+            break
+
+    img_whole = Image.open("allhands.jpg")
+
+    crop_areas = {
+        'pl1': (404, 157, 828, 682),
+        'pl2': (846, 68, 1280, 566)
+    }
+
+    for k, v in crop_areas.items():
+        '''Loop through the player regions, crop them, and upload them
+        to s3 with the suffix on the key name. then send a message to IoT'''
+        crop_img_bytes = io.BytesIO()
+        crop_image(img_whole, v, crop_img_bytes)
+        crop_img_bytes.seek(0)
+        img_name = 'images/' + str(uuid.uuid4()) + k + ".jpg"
+        s3.upload_fileobj(crop_img_bytes, bucket, img_name, ExtraArgs={'ContentType': 'image/jpeg'})
+        payload = {'s3Key': img_name}
+        client.publish(topic="newimages" + k, payload=json.dumps(payload))
+
+
+
+
+
 
 def take_pics(bucket):
     # camera start (benchmark time it takes to take a pic)
