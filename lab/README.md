@@ -1,7 +1,5 @@
 # Lab Guide: re:Vegas Blackjack 
 
-# Using Amazon SageMaker Object Detection For Playing Cards
-
 ## Table of Contents
 
 1. Introduction
@@ -45,13 +43,13 @@ Now that your role is created, let's add a policy to it, which will give our not
 
 Make sure you're on [IAM's Roles](https://console.aws.amazon.com/iam/home?region=us-east-1#/roles) page, then filter the roles by typing "revegas" into the search box. 
 
-![img/filter-roles.png](img/filter-roles.png | width=300)
+![img/filter-roles.png](img/filter-roles.png)  <!-- .element width="874" -->
 
 Click the ["revegas-blackjack" link](https://console.aws.amazon.com/iam/home?region=us-east-1#/roles/revegas-blackjack) to look load the role summary, then click the **Attach policies** button, then click the **Create policy** button. This will open a new tab.
 
 Click the "JSON" tab as shown below, 
 
-![img/create-json-policy.png](img/create-json-policy.png)
+![img/create-json-policy.png](img/create-json-policy.png) <!-- .element width="778" -->
 
 and enter the following JSON code:
 
@@ -108,7 +106,7 @@ Click the "Services" dropdown use the search box to find "SageMaker", or visit t
 
 In SageMaker's left navigation menu, click "Notebook Instances" under **Notebook**, then click the "Create notebook instance" button on the right side of the page, or use the link below.
 
-[![Create notebook instance](img/create-notebook-instance.png)](https://console.aws.amazon.com/sagemaker/home?region=us-east-1#/notebook-instances/create)
+[![Create notebook instance](img/create-notebook-instance.png)](https://console.aws.amazon.com/sagemaker/home?region=us-east-1#/notebook-instances/create) <!-- .element width="438" -->
 
 Fill out the "Notebook instance settings" form as shown below. You can use any Notebook instance type you want, but for best results choose one of the accelerated computing instances, like the __ml.p2.xlarge__. 
 
