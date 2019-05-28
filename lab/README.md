@@ -45,7 +45,7 @@ Now that your role is created, let's add a policy to it, which will give our not
 
 Make sure you're on [IAM's Roles](https://console.aws.amazon.com/iam/home?region=us-east-1#/roles) page, then filter the roles by typing "revegas" into the search box. 
 
-![img/filter-roles.png](img/filter-roles.png)
+![img/filter-roles.png](img/filter-roles.png | width=300)
 
 Click the ["revegas-blackjack" link](https://console.aws.amazon.com/iam/home?region=us-east-1#/roles/revegas-blackjack) to look load the role summary, then click the **Attach policies** button, then click the **Create policy** button. This will open a new tab.
 
