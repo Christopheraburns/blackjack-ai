@@ -12,7 +12,7 @@
 
 ### Introduction
 
-In this workshop, you will learn how to use machine learning and computer vision to detection the rank and suit of playing cards from a [Standard 52-card deck](https://en.wikipedia.org/wiki/Standard_52-card_deck). We'll use cloud services from AWS to develop, train, and deploy for prediction a deep neural network model in under an hour.
+In this workshop, you will learn how to use machine learning and computer vision to detection the rank and suit of playing cards from a [Standard 52-card deck](https://en.wikipedia.org/wiki/Standard_52-card_deck). We'll use cloud services from AWS to develop, train, and deploy for prediction a deep neural network model.
 
 Object detection is the process of identifying and localizing objects in an image. A typical object detection solution takes an image as input and provides a bounding box on the image where an object of interest is found. It also identifies what type of object the box encapsulates. To create such a solution, we need to acquire and process a traning dataset, create and setup a training job for the alorithm so that it can learn about the dataset. Finally, we can then host the trained model in an endpoint, to which we can supply images.
 
@@ -24,12 +24,15 @@ Amazon SageMaker is a fully-managed service that covers the entire machine learn
 
 To use SageMaker, you'll need to use an existing account from Amazon Web Services (AWS), or create a new one at [https://aws.amazon.com/](https://aws.amazon.com/).
 
-You'll also need a custom Identity and Access Management (IAM) role and policy to give your notebook access to SageMaker and Amazon S3. 
+You'll also need a custom Identity and Access Management (IAM) role and policy to give your notebook access to SageMaker and Amazon S3. Let's create those now.
 
-Once you've logged into the [AWS console](https://console.aws.amazon.com/), click the "Services" dropdown use the search box to find "IAM", 
+Log into the [AWS console](https://console.aws.amazon.com/), click the "Services" dropdown use the search box to find "IAM", 
 or visit the IAM console directly at [https://console.aws.amazon.com/iam/home?region=us-east-1#/home](https://console.aws.amazon.com/iam/home?region=us-east-1#/home). 
 
-Let's create a role first. On the left navigation menu, click "Roles," then click the **Create role** button to create a new role. Under "Choose the service that will use this role, select "SageMaker",
+
+#### Create a role
+
+You'll create a role first. On the left navigation menu, click "Roles," then click the **Create role** button to create a new role. Under "Choose the service that will use this role," select "SageMaker",
 
 ![img/create-role.png](img/create-role.png)
 
@@ -38,6 +41,8 @@ then, click the **Next: Permissions** button.
 You'll notice an "AmazonSageMakerFullAccess" policy is given by default for this role. Finish the creation of this role with the default permissions by clicking **Next: Tags**, then **Next: Review**, and finally giving the role a name and optional description before clicking the **Create role** button.
 
 ![img/create-role.png](img/review-role.png)
+
+#### Add a policy
 
 Now that your role is created, let's add a policy to it, which will give our notebook access to the S3 bucket that contains our training data. 
 
