@@ -1,6 +1,7 @@
 import boto3
 import json
 import sagemaker
+from sagemaker import mxnet
 from sagemaker import get_execution_role
 import io
 import random
@@ -34,7 +35,7 @@ def read_s3_contents_with_download(bucket_name, key):
     return bytes_io
 
 
-def visualize_detection(img, dets, dest_key, player_dealer, height, width, classes=[], thresh=0.1, bucket_name='remars2019-revegas-imageslanding'):
+def visualize_detection(img, dets, dest_key, player_dealer, classes=[], thresh=0.1, bucket_name='remars2019-revegas-imageslanding'):
         '''
         visualize detections in one image, store it in s3,
         and send a message to IoT to display the image in a browser
@@ -63,7 +64,6 @@ def visualize_detection(img, dets, dest_key, player_dealer, height, width, class
         '''
         f = io.BytesIO()
         plt.clf()
-
         # img=mpimg.imread(img_file, 'jpg')
         plt.imshow(img)
         # height = img.shape[0]
@@ -76,10 +76,10 @@ def visualize_detection(img, dets, dest_key, player_dealer, height, width, class
             cls_id = int(klass)
             if cls_id not in colors:
                 colors[cls_id] = (random.random(), random.random(), random.random())
-            xmin = int(x0 * width)
-            ymin = int(y0 * height)
-            xmax = int(x1 * width)
-            ymax = int(y1 * height)
+            xmin = int(x0)
+            ymin = int(y0)
+            xmax = int(x1)
+            ymax = int(y1)
             rect = plt.Rectangle((xmin, ymin), xmax - xmin,
                                  ymax - ymin, fill=False,
                                  edgecolor=colors[cls_id],
@@ -118,7 +118,7 @@ def get_key(val):
     return "key doesn't exist"
 
 
-def format_predictions(dets, height, width, player_dealer, thresh=0.1):
+def format_predictions(dets, player_dealer, thresh=0.1):
     '''takes predictions, formats them to be sent to Kinesis Data Stream'''
     data = {'playerDealer': player_dealer,'preds': []}
     for det in dets:
@@ -127,8 +127,8 @@ def format_predictions(dets, height, width, player_dealer, thresh=0.1):
             continue
         data['preds'].append({'cls': get_key(klass),
             'score': score,
-            'xmin-ymin': [int(x0 * width),int(y0 * height)], # top left
-            'xmax-ymax': [int(x1 * width),int(y1 * height)]})
+            'xmin-ymin': [int(x0),int(y0)], # top left
+            'xmax-ymax': [int(x1),int(y1)]})
     record = {
         'Data': json.dumps(data),
         'PartitionKey': str(hash(player_dealer))
@@ -153,7 +153,12 @@ def handler(event, context):
     source_key = event['Records'][0]['s3']['object']['key']
     print(source_key)
 
-    img = read_s3_contents_with_download(bucket_name, source_key)
+    real_time_pred = mxnet.model.MXNetPredictor(
+        endpoint_name=endpoint,
+        sagemaker_session=sess
+    )
+
+    
     # pil_img = Image.open(img)
     # pil_img_size = pil_img.size
     # pil_img = pil_img.resize((512,512), Image.BILINEAR)
@@ -168,12 +173,7 @@ def handler(event, context):
 
 
 
-    real_time_pred = sagemaker.predictor.RealTimePredictor(
-        endpoint=endpoint,
-        sagemaker_session=sess,
-        content_type='image/jpeg',
-        accept='image/jpeg'
-    )
+
 
     # new_bytes = io.BytesIO()
     # im = Image.open(img)
@@ -183,7 +183,7 @@ def handler(event, context):
     # im = im.resize((512,512), Image.BILINEAR)
     # im.save(new_bytes, "JPEG")
     # dets = json.loads(real_time_pred.predict(new_bytes.getvalue()))
-    dets = json.loads(real_time_pred.predict(img.getvalue()))
+    dets = real_time_pred.predict({'s3Uri': 's3://{}/{}'.format(bucket_name, source_key)})
 
     dest_key_base = os.path.basename(source_key)
     dest_key_no_ext = os.path.splitext(dest_key_base)[0]
@@ -191,14 +191,12 @@ def handler(event, context):
     player_dealer = dest_key_no_ext[-3:]
     dest_key = 'dest/' + dest_key_no_ext + '.png'
 
-    img_file=mpimg.imread(img, 'jpg')
-    height = img_file.shape[0]
-    width = img_file.shape[1]
+
     
     # debugging, can comment this out
     print("Raw predictions for {}".format(source_key))
     print(dets['prediction'])
-    record = format_predictions(dets['prediction'], height=height, width=width, thresh=0.1, player_dealer=player_dealer)
+    record = format_predictions(dets['prediction'], thresh=0.2, player_dealer=player_dealer)
     # debugging, can comment this out in prod
     print(json.dumps(record))
     kinesis.put_record(
@@ -207,5 +205,12 @@ def handler(event, context):
         PartitionKey=record['PartitionKey']
     )
 
-    visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, height=height, width=width, classes=object_categories, thresh=0.1)
+    img = read_s3_contents_with_download(bucket_name, source_key)
+
+    pil_img = Image.open(img)
+    pil_img = pil_img.resize((416,416), Image.BILINEAR)
+    new_img_bytes = io.BytesIO()
+    pil_img.save(new_img_bytes, 'JPEG')
+    img_file=mpimg.imread(new_img_bytes, 'jpg')
+    visualize_detection(img=img_file, player_dealer=player_dealer, dets=dets['prediction'], dest_key=dest_key, classes=object_categories, thresh=0.2)
     return

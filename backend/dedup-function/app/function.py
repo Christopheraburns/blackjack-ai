@@ -73,36 +73,40 @@ def deduped_records(new_preds):
         print("Dynamo response")
         print(pl_existing_cards)
         if 'preds' in pl_existing_cards:
-            # if we already saw predictions for a player/dealer region
-            new_preds_deduped=[]
-            old_preds = pl_existing_cards['preds']
-            for pred in new_pred['preds']:
-                for old_pred in old_preds:
-                    # for a detection, calculate its bounding box euclidean distance from the previous detected bboxes within the player/dealer region
-                    new_top_left = np.array((pred['xmin-ymin'][0], pred['xmin-ymin'][1]))
-                    old_top_left = np.array((old_pred['xmin-ymin'][0], old_pred['xmin-ymin'][1]))
-                    top_left_distance = np.linalg.norm(new_top_left-old_top_left)
+            if pl_existing_cards['preds'] != []:
+                # if we already saw predictions for a player/dealer region
+                new_preds_deduped=[]
+                old_preds = pl_existing_cards['preds']
+                for pred in new_pred['preds']:
+                    for old_pred in old_preds:
+                        # for a detection, calculate its bounding box euclidean distance from the previous detected bboxes within the player/dealer region
+                        new_top_left = np.array((pred['xmin-ymin'][0], pred['xmin-ymin'][1]))
+                        old_top_left = np.array((old_pred['xmin-ymin'][0], old_pred['xmin-ymin'][1]))
+                        top_left_distance = np.linalg.norm(new_top_left-old_top_left)
 
-                    new_bottom_right = np.array((pred['xmax-ymax'][0], pred['xmax-ymax'][1]))
-                    old_bottom_right = np.array((old_pred['xmax-ymax'][0], old_pred['xmax-ymax'][1]))
-                    bottom_right_distance = np.linalg.norm(new_bottom_right-old_bottom_right)
-                    # ASSUMPTION! May need to modify these distances and include a condition on matching suit/rank
-                    if top_left_distance < 20 and bottom_right_distance < 20:
-                        # if the distance is pretty short, discard the prediction. print statements below for debugging
-                        print("card too similar")
-                        print("New preds deduped before:")
-                        print(new_preds_deduped)
+                        new_bottom_right = np.array((pred['xmax-ymax'][0], pred['xmax-ymax'][1]))
+                        old_bottom_right = np.array((old_pred['xmax-ymax'][0], old_pred['xmax-ymax'][1]))
+                        bottom_right_distance = np.linalg.norm(new_bottom_right-old_bottom_right)
+                        # ASSUMPTION! May need to modify these distances and include a condition on matching suit/rank
+                        if top_left_distance < 20 and bottom_right_distance < 20:
+                            # if the distance is pretty short, discard the prediction. print statements below for debugging
+                            print("card too similar")
+                            print("New preds deduped before:")
+                            print(new_preds_deduped)
 
-                        # all we need to do is "match" a detection with an old detection once. if we do, we should discard it.
-                        while pred in new_preds_deduped:
-                            new_preds_deduped.remove(pred)
+                            # all we need to do is "match" a detection with an old detection once. if we do, we should discard it.
+                            while pred in new_preds_deduped:
+                                new_preds_deduped.remove(pred)
 
-                        print("New preds deduped after:")
-                        print(new_preds_deduped)
-                        # never run this loop again for the new detection since it "matched" a card in the given player/dealer region. start the loop for a new detection:
-                        break
-                    new_preds_deduped.append(pred)
-            pl_existing_cards['preds'].extend(new_preds_deduped)
+                            print("New preds deduped after:")
+                            print(new_preds_deduped)
+                            # never run this loop again for the new detection since it "matched" a card in the given player/dealer region. start the loop for a new detection:
+                            break
+                        new_preds_deduped.append(pred)
+                pl_existing_cards['preds'].extend(new_preds_deduped)
+            else:
+                    pl_existing_cards['preds'] = new_pred['preds']
+                    new_preds_deduped=new_pred['preds']
         else:
             # if the dedup table is cleared via the browser button, that means there were no cards on the table and this is a brand new hand, so we skip the dedup logic:
             pl_existing_cards['preds'] = new_pred['preds']
