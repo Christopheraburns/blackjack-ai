@@ -126,10 +126,14 @@ def handler(event, context):
     guidance = {
         'guidance': 'Stand'
     }
-    if rl_payload['psum'] == 21:
+    if rl_payload['psum'] == 0 or rl_payload['dcard'] == 0:
+        guidance['guidance'] = 'Feed me hands!'
+    elif rl_payload['psum'] == 21:
         guidance['guidance'] = 'Twenty One!'
     elif rl_payload['psum'] > 21:
         guidance['guidance'] = 'Bust!'
+    elif len(dealer_hand['hand'].keys()) > 1:
+        return
     else:
         print("doing fancy heuristic/RL stuff now")
         response = lambda_client.invoke(
