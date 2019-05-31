@@ -205,6 +205,7 @@ class App extends Component {
             this.onShuffleClick = this.onShuffleClick.bind(this);
             this.onShuffleHideYes = this.onShuffleHideYes.bind(this);
             this.onShuffleHideNo = this.onShuffleHideNo.bind(this);
+            this.postDedupReset = this.postDedupReset.bind(this);
         }
 
         postShoeReset() {
@@ -248,7 +249,7 @@ class App extends Component {
             })
           }
 
-        postDedupReset() {
+        postDedupReset(e) {
             myInit.body.arg = "new_round"
             API.post(apiName, path, myInit).then(response => {
               this.setState({
@@ -344,6 +345,7 @@ class App extends Component {
       
             const multiAxisOptions = {
                 responsive: true,
+                maintainAspectRatio: false,
                 tooltips: {
                   mode: 'index',
                   intersect: true
@@ -377,16 +379,16 @@ class App extends Component {
                     <div className="p-col-12 p-lg-6">
                         <div className="card">
                             <h1 style={{fontSize:'16px'}}>New Round</h1>
-                            <Button style={{background: '#25cbd2', border: '#25cbd2'}} label="New Round" icon="pi pi-external-link" onClick={this.onResetClick}/>
+                            <Button style={{background: '#25cbd2', border: '#25cbd2'}} label="New Round" icon="pi pi-external-link" onClick={this.postDedupReset}/>
                         </div>
                     </div>
                     <div className="p-col-12 p-lg-6">
                         <div className="card">
                             <h1 style={{fontSize:'16px'}}>Deck Shuffle</h1>
-                            <Button style={{background: '#25cbd2', border: '#25cbd2'}} label="Clear Counts" icon="pi pi-external-link" onClick={this.onShuffleClick}/>
+                            <Button style={{background: '#25cbd2', border: '#25cbd2'}} label="Clear Counts" icon="pi pi-external-link" onClick={e => this.onShuffleClick(e)}/>
                         </div>
                     </div>
-                    <div className="p-col-12 p-md-6 p-lg-4">
+                    <div className="p-col-12 p-md-4 p-lg-3">
                         <Panel header="Player 1" style={{height: '100%'}}>
                             <p>
                                 <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img1} alt='pix' />
@@ -395,7 +397,7 @@ class App extends Component {
                             </p>
                         </Panel>
                     </div>
-                    <div className="p-col-12 p-md-6 p-lg-4">
+                    <div className="p-col-12 p-md-4 p-lg-3">
                         <Panel header="Player 2" style={{height: '100%'}}>
                         <p>
                                 <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img2} alt='pix' />
@@ -404,7 +406,7 @@ class App extends Component {
                         </p>
                         </Panel>
                     </div>
-                    <div className="p-col-12 p-md-6 p-lg-4">
+                    <div className="p-col-12 p-md-4 p-lg-3">
                         <Panel header="Player 3" style={{height: '100%'}}>
                         <p>
                                 <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img3} alt='pix' />
@@ -413,7 +415,7 @@ class App extends Component {
                         </p>
                         </Panel>
                     </div>
-                    <div className="p-col-12 p-md-6 p-lg-4">
+                    {/* <div className="p-col-12 p-md-6 p-lg-4">
                         <Panel header="Player 4" style={{height: '100%'}}>
                         <p>
                                 <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img4} alt='pix' />
@@ -430,17 +432,17 @@ class App extends Component {
                             <p style={{fontSize: 
                                 "20px", textAlign: "center", color: "#FFFFFF", backgroundColor: "#25cbd3"}}>{this.state.pl5guidance}</p>
                         </Panel>
-                    </div>
-                    <div className="p-col-12 p-md-6 p-lg-4">
+                    </div> */}
+                    <div className="p-col-12 p-md-4 p-lg-3">
                         <Panel header="Dealer" style={{height: '100%'}}>
                         <p>
                                 <img style={{height: "auto", maxWidth: "100%", marginLeft: "auto", marginRight:"auto", display: "block"}} src={"https://dkszktluuqk1z.cloudfront.net/" + this.state.img6} alt='pix'/>
                         </p>
                         </Panel>
                     </div>
-                    <div className="p-col-12 p-md-6 p-lg-12">
-                        <Panel header="Chart" style={{height: '100%'}}>
-                            <Chart type="bar" data={chartdata} options={multiAxisOptions} />
+                    <div className="p-col-12 p-lg-12">
+                        <Panel header="Chart">
+                            <Chart type="bar" data={chartdata} options={multiAxisOptions} style={{height: "300px"}}/>
                         </Panel>
                     </div>
                 </div>

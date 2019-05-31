@@ -8,6 +8,7 @@ from collections import OrderedDict
 from time import sleep
 
 iot_data = boto3.client('iot-data')
+lambda_client = boto3.client('lambda')
 
 dealer_hand_table='dealer-hand'
 counts_table_name='counts-table'
@@ -19,7 +20,7 @@ counts_table = dynamodb_resource.Table(counts_table_name)
 
 # use this map to convert the hand ranks (sent as strings) to generate a sum worth for a hand
 rank_map = {
-    'A' : [1, 11], # rank_map['A'][0] soft ace or rank_map['A'][1] hard depending on the values of the rest of the hand
+    'A' : 11, # rank_map['A'][0] soft ace or rank_map['A'][1] hard depending on the values of the rest of the hand
     'K': 10,
     'Q': 10,
     'J': 10,
@@ -34,10 +35,22 @@ rank_map = {
     '2': 2
 }
 
-def sum_hand_worth(hand):
+def sum_dealer_hand_worth(hand):
     '''
     hand = object, {'A': 1, 'J': 1, '4': 1}
     '''
+    worth = 0
+    for k,v in hand.items():
+        card_val = rank_map[k]
+        worth = worth + int(card_val * v) # hand's worth pre-aces
+
+    return worth
+        
+def sum_player_hand_worth(hand):
+    '''
+    hand = object, {'A': 1, 'J': 1, '4': 1}
+    '''
+    payload = {}
     worth = 0
     count_of_aces = 0
     for k,v in hand.items():
@@ -46,27 +59,18 @@ def sum_hand_worth(hand):
             continue
         card_val = rank_map[k]
         worth = worth + int(card_val * v) # hand's worth pre-aces
-
-    if count_of_aces == 0:
-        return worth
-    elif count_of_aces == 1:
-        if worth > 10:
-            # if someone hit on J and 4 and got an ace for example:
-            # default to soft ace
-            worth = worth + 1
-            return worth
-        if worth in range(7,11):
-            # hand is worth 18+ on a hard ace
-            worth = worth + 11
-            return worth
-        if worth < 7:
-            # most likely play as a soft ace and hit:
-            worth = worth + 1
-            return worth
+    if count_of_aces > 0:
+        if worth + count_of_aces + 10 <= 21:
+            payload['ace'] = 1
+            payload['psum'] = worth + count_of_aces + 10
+            return payload
+        else:
+            payload['ace'] = 0
+            payload['psum'] = worth + count_of_aces
+            return payload
     else:
-        # there are two or more aces, play 1 hard and the rest soft
-        worth = worth + 11 + (count_of_aces-1)
-        return worth
+        payload = {'ace': 0,'psum': worth}
+        return payload
 
 
 def handler(event, context):
@@ -90,25 +94,30 @@ def handler(event, context):
     player = list(event.keys())[0]
     player_hand = event[player]
 
-    player_hand_worth = sum_hand_worth(player_hand)
+    
+    rl_payload = sum_player_hand_worth(player_hand)
+    # TODO: Implement below!
+    dealer_hand_numeric = sum_dealer_hand_worth(dealer_hand['hand'])
+    rl_payload['dcard'] = dealer_hand_numeric
 
-    dealer_hand_worth = sum_hand_worth(dealer_hand['hand'])
 
-    sleep(1)
-    deck_counts = json_util.loads(counts_table.get_item(Key={'tablename': 'dayone'})['Item'])
+    # dealer_hand_worth = sum_dealer_hand_worth(dealer_hand['hand'])
+
+    # sleep(1)
+    # deck_counts = json_util.loads(counts_table.get_item(Key={'tablename': 'dayone'})['Item'])
 
     # bunch of print statements for logging
     print("Player hand I received in the payload:")
     print(player)
     print(player_hand)
-    print("Player hand worth:")
-    print(player_hand_worth)
+    print("RL Payload:")
+    print(rl_payload)
     print("Dealer hand from dynamo:")
     print(dealer_hand['hand'])
-    print("Dealer hand worth:")
-    print(dealer_hand_worth)
-    print("Deck counts:")
-    print(deck_counts)
+    # print("Dealer hand worth:")
+    # print(dealer_hand_worth)
+    # print("Deck counts:")
+    # print(deck_counts)
 
 
     '''
@@ -117,13 +126,19 @@ def handler(event, context):
     guidance = {
         'guidance': 'Stand'
     }
-    if player_hand_worth == 21:
+    if rl_payload['psum'] == 21:
         guidance['guidance'] = 'Twenty One!'
-    elif player_hand_worth > 21:
+    elif rl_payload['psum'] > 21:
         guidance['guidance'] = 'Bust!'
     else:
         print("doing fancy heuristic/RL stuff now")
-        guidance['guidance'] = 'Results'
+        response = lambda_client.invoke(
+                FunctionName='rl-agent',
+                InvocationType='RequestResponse',
+                Payload=json.dumps(rl_payload)
+            )
+        body =  json.loads(response['Payload'].read().decode("utf-8").replace('\\', '').replace('\"\"', '\"'))
+        guidance['guidance'] = body['body']
 
 
     # publish the guidance (hit or stand) to an IoT topic that corresponds to the player
